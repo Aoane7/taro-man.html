@@ -468,6 +468,101 @@
       to{transform:translate(-50%,-55px) scale(1.25); opacity:0}
     }
 
+
+    /* ---------- DERATAME EFFECTS ---------- */
+    .chaos-message{
+      position:absolute;
+      z-index:80;
+      left:50%;
+      top:45%;
+      display:none;
+      max-width:88vw;
+      transform:translate(-50%,-50%);
+      padding:clamp(8px, 2vmin, 18px) clamp(14px, 3vmin, 28px);
+      border:5px solid #111;
+      background:rgba(255,255,255,.94);
+      box-shadow:7px 7px 0 #111;
+      font-size:clamp(28px, 7vmin, 72px);
+      line-height:1;
+      font-weight:1000;
+      text-align:center;
+      pointer-events:none;
+    }
+
+    .chaos-message.show{
+      display:block;
+      animation:chaosPop .18s ease-out;
+    }
+
+    @keyframes chaosPop{
+      0%{transform:translate(-50%,-50%) scale(.25) rotate(-8deg);opacity:0}
+      75%{transform:translate(-50%,-50%) scale(1.12) rotate(3deg);opacity:1}
+      100%{transform:translate(-50%,-50%) scale(1) rotate(0);opacity:1}
+    }
+
+    #gameScreen.taroman-hit{
+      animation:taromanHitShake .34s ease-out;
+    }
+
+    #gameScreen.taroman-mega{
+      animation:taromanMegaShake .55s ease-out;
+    }
+
+    #gameScreen.upside-down{
+      animation:taromanUpsideDown 1s ease-in-out;
+      transform-origin:50% 50%;
+    }
+
+    @keyframes taromanHitShake{
+      0%,100%{transform:translate(0,0)}
+      25%{transform:translate(-7px,4px)}
+      50%{transform:translate(7px,-4px)}
+      75%{transform:translate(-4px,-2px)}
+    }
+
+    @keyframes taromanMegaShake{
+      0%,100%{transform:translate(0,0) rotate(0)}
+      15%{transform:translate(-14px,8px) rotate(-1.5deg)}
+      30%{transform:translate(14px,-9px) rotate(1.5deg)}
+      45%{transform:translate(-12px,-7px) rotate(-1deg)}
+      60%{transform:translate(11px,7px) rotate(1deg)}
+      75%{transform:translate(-7px,3px)}
+      90%{transform:translate(5px,-3px)}
+    }
+
+    @keyframes taromanUpsideDown{
+      0%{transform:rotate(0deg)}
+      18%{transform:rotate(180deg)}
+      78%{transform:rotate(180deg)}
+      100%{transform:rotate(360deg)}
+    }
+
+    .floating-score.negative{
+      font-size:clamp(24px, 5vw, 46px);
+    }
+
+    .deratame-score-result{
+      display:none;
+      align-self:center;
+      border:4px solid #111;
+      background:#fff;
+      padding:clamp(5px, 1vmin, 10px) clamp(10px, 2vmin, 18px);
+      margin:0 auto clamp(4px, 1vmin, 10px);
+      font-size:clamp(20px, 3.5vmin, 32px);
+      font-weight:1000;
+      box-shadow:4px 4px 0 #111;
+    }
+
+    .deratame-score-result.show{
+      display:block;
+    }
+
+    .deratame-score-result small{
+      display:block;
+      margin-top:2px;
+      font-size:.45em;
+    }
+
     /* ---------- RESULT ---------- */
     #resultScreen{
       background:
@@ -656,9 +751,8 @@
           じょうしき
         </button>
 
-        <button class="mode-button" disabled>
+        <button id="deratameModeButton" class="mode-button">
           でたらめ
-          <span class="soon">COMING SOON</span>
         </button>
       </div>
     </div>
@@ -667,7 +761,7 @@
   <!-- じょうしきモード レベル選択 -->
   <section id="levelScreen" class="screen">
     <div class="level-card">
-      <h1 class="title">じょうしき</h1>
+      <h1 id="levelModeTitle" class="title">じょうしき</h1>
       <p class="level-note">レベルをえらべ</p>
 
       <div class="level-buttons">
@@ -694,13 +788,15 @@
   <!-- ゲーム -->
   <section id="gameScreen" class="screen">
     <main class="game-shell">
+      <div id="chaosMessage" class="chaos-message" aria-live="polite"></div>
+
       <div class="hud">
         <div class="hud-left">
           <div class="hud-box">
             のこり <span id="timeText">60</span> 秒
           </div>
           <div class="hud-box">
-            とくてん <span id="scoreText">0</span>
+            <span id="scoreLabel">とくてん</span> <span id="scoreText">0</span>
           </div>
           <div class="hud-box">
             Lv.<span id="levelText">3</span>
@@ -740,6 +836,11 @@
     <div class="result-card">
       <h1>けっか</h1>
       <p class="result-sub">いちばん多くたたいたのは……</p>
+
+      <div id="deratameScoreResult" class="deratame-score-result">
+        でたらめ点 <span id="resultScoreText">0</span>
+        <small>たかければえらい、わけではない</small>
+      </div>
 
       <div id="bestList"></div>
 
@@ -846,6 +947,8 @@
       const topImage = document.getElementById("topImage");
       const nandaOverlay = document.getElementById("nandaOverlay");
       const normalModeButton = document.getElementById("normalModeButton");
+      const deratameModeButton = document.getElementById("deratameModeButton");
+      const levelModeTitle = document.getElementById("levelModeTitle");
       const levelButtons = [...document.querySelectorAll(".level-button[data-level]")];
       const levelBackButton = document.getElementById("levelBackButton");
 
@@ -853,14 +956,18 @@
       const holes = [...holesContainer.querySelectorAll(".hole")];
 
       const timeText = document.getElementById("timeText");
+      const scoreLabel = document.getElementById("scoreLabel");
       const scoreText = document.getElementById("scoreText");
       const levelText = document.getElementById("levelText");
       const lifeFaces = [...document.querySelectorAll(".life-face")];
       const buildingImage = document.getElementById("buildingImage");
       const syatyoImage = document.getElementById("syatyoImage");
+      const chaosMessage = document.getElementById("chaosMessage");
 
       const bestList = document.getElementById("bestList");
       const destroyCountText = document.getElementById("destroyCountText");
+      const deratameScoreResult = document.getElementById("deratameScoreResult");
+      const resultScoreText = document.getElementById("resultScoreText");
       const retryButton = document.getElementById("retryButton");
       const topButton = document.getElementById("topButton");
 
@@ -876,6 +983,7 @@
          ゲーム状態
       ========================================================= */
       let gameRunning = false;
+      let currentMode = "normal";
       let currentLevel = 3;
       let score = 0;
       let lives = 3;
@@ -888,7 +996,14 @@
       let clockTimer = null;
       let buildingResetTimer = null;
       let kickResetTimer = null;
+      let autoDestroyTimer = null;
+      let chaosMessageTimer = null;
+      let screenEffectTimer = null;
       let gameEndAt = 0;
+
+      let spawnPausedUntil = 0;
+      let chaosEventActive = false;
+      let chaosTimers = [];
 
       // 1.png または 2.png が最後に出現した時刻
       let lastSpecialCharacterSpawnAt = -Infinity;
@@ -994,9 +1109,17 @@
       });
 
       /* =========================================================
-         じょうしきモード開始
+         モード・レベル選択
       ========================================================= */
       normalModeButton.addEventListener("click", () => {
+        currentMode = "normal";
+        levelModeTitle.textContent = "じょうしき";
+        showScreen("level");
+      });
+
+      deratameModeButton.addEventListener("click", () => {
+        currentMode = "deratame";
+        levelModeTitle.textContent = "でたらめ";
         showScreen("level");
       });
 
@@ -1007,18 +1130,25 @@
       levelButtons.forEach(button => {
         button.addEventListener("click", () => {
           currentLevel = Number(button.dataset.level);
-          startNormalGame();
+          startSelectedGame();
         });
       });
 
-      retryButton.addEventListener("click", startNormalGame);
+      retryButton.addEventListener("click", startSelectedGame);
 
       topButton.addEventListener("click", () => {
+        gameRunning = false;
         stopGameTimers();
         clearAllCharacters(false);
+        clearScreenEffect();
+
         syatyoImage.classList.remove("show");
+        chaosMessage.classList.remove("show");
+
         stopAudio(syatyoSound);
         stopAudio(damageSound);
+        stopAudio(hakaiSound);
+        stopAudio(donSound);
         stopAudio(kekkaSound);
 
         showScreen("top");
@@ -1026,114 +1156,169 @@
         safePlay(topBgm, true);
       });
 
-      function startNormalGame() {
+      function startSelectedGame() {
+        gameRunning = false;
+        stopGameTimers();
+        clearAllCharacters(false);
+        clearScreenEffect();
+
         stopAudio(nandaSound);
         stopAudio(hakaiSound);
         stopAudio(syatyoSound);
         stopAudio(damageSound);
+        stopAudio(donSound);
         stopAudio(kekkaSound);
 
-        // モグラ叩き中はBGMを常に10%で再生
+        // モグラ叩き中はBGMを常に10%
         topBgm.volume = TOP_BGM_GAME_VOLUME;
         safePlay(topBgm, false);
 
-        stopGameTimers();
-        clearAllCharacters(false);
-
-        gameRunning = true;
         score = 0;
         lives = 3;
         buildingDestroyCount = 0;
         hitCounts = Array(CHARACTER_COUNT + 1).fill(0);
         lastSpecialCharacterSpawnAt = -Infinity;
+        spawnPausedUntil = 0;
+        chaosEventActive = false;
+
+        scoreLabel.textContent =
+          currentMode === "deratame" ? "でたらめ点" : "とくてん";
 
         scoreText.textContent = "0";
         timeText.textContent = String(GAME_SECONDS);
         levelText.textContent = String(currentLevel);
 
         syatyoImage.classList.remove("show");
-
-        if (kickResetTimer) {
-          clearTimeout(kickResetTimer);
-          kickResetTimer = null;
-        }
+        chaosMessage.classList.remove("show");
 
         buildingImage.src = "images/bill.png";
         buildingImage.classList.remove("shake", "destroyed");
 
         updateLives();
-
         showScreen("game");
 
+        gameRunning = true;
         gameEndAt = performance.now() + GAME_SECONDS * 1000;
-
-        // 最初の1体はすぐ出す
-        spawnCharacter();
 
         const levelSpeed = LEVEL_SETTINGS[currentLevel].speed;
         const spawnIntervalMs = BASE_SPAWN_INTERVAL_MS / levelSpeed;
 
-        spawnTimer = setInterval(() => {
-          if (gameRunning) spawnCharacter();
-        }, spawnIntervalMs);
+        if (currentMode === "deratame") {
+          spawnDeratameWave();
+
+          spawnTimer = setInterval(() => {
+            if (gameRunning) spawnDeratameWave();
+          }, spawnIntervalMs);
+
+          scheduleDeratameEvents();
+        } else {
+          spawnCharacter();
+
+          spawnTimer = setInterval(() => {
+            if (gameRunning) spawnCharacter();
+          }, spawnIntervalMs);
+        }
 
         clockTimer = setInterval(updateClock, 100);
       }
 
       /* =========================================================
-         キャラ出現
+         キャラクター抽選・生成
       ========================================================= */
-      function spawnCharacter() {
-        if (!gameRunning) return;
+      const WEIGHTED_CHARACTERS = [
+        1, 1, 1,
+        2, 2, 2,
+        3, 4, 5, 6, 7, 8, 9, 10
+      ];
 
-        const emptyHoleIndexes = [];
+      const DERATAME_WAVE_COUNTS = [
+        { count: 1, weight: 25 },
+        { count: 2, weight: 25 },
+        { count: 3, weight: 15 },
+        { count: 4, weight: 10 },
+        { count: 5, weight: 8 },
+        { count: 6, weight: 6 },
+        { count: 7, weight: 4 },
+        { count: 8, weight: 3 },
+        { count: 9, weight: 4 }
+      ];
+
+      function getEmptyHoleIndexes() {
+        const result = [];
 
         activeCharacters.forEach((active, index) => {
-          if (!active) emptyHoleIndexes.push(index);
+          if (!active) result.push(index);
         });
 
-        // 全穴が使用中なら今回は出さない
-        if (emptyHoleIndexes.length === 0) return;
+        return result;
+      }
 
-        const holeIndex =
-          emptyHoleIndexes[
-            Math.floor(Math.random() * emptyHoleIndexes.length)
-          ];
+      function shuffle(array) {
+        for (let i = array.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [array[i], array[j]] = [array[j], array[i]];
+        }
+        return array;
+      }
+
+      function pickWeightedCharacter(ignoreCooldown = false, taromanOnly = false) {
+        if (taromanOnly) {
+          return Math.random() < 0.5 ? 1 : 2;
+        }
 
         const now = performance.now();
         const specialAllowed =
+          ignoreCooldown ||
           now - lastSpecialCharacterSpawnAt >= SPECIAL_CHARACTER_COOLDOWN_MS;
 
-        // 通常は1～10から抽選。
-        // ただし1または2が直近5秒以内に出現していた場合は、
-        // 1・2を除外して3～10だけから抽選する。
         let characterNumber;
 
         if (specialAllowed) {
-          // 重み付き抽選：
-          // 1.png = 3、2.png = 3、3～10.png = 各1
-          // → 1.png / 2.png は、それぞれ他画像の3倍の出現頻度
-          const weightedCharacters = [
-            1, 1, 1,
-            2, 2, 2,
-            3, 4, 5, 6, 7, 8, 9, 10
-          ];
-
           characterNumber =
-            weightedCharacters[
-              Math.floor(Math.random() * weightedCharacters.length)
+            WEIGHTED_CHARACTERS[
+              Math.floor(Math.random() * WEIGHTED_CHARACTERS.length)
             ];
         } else {
-          // 1・2の5秒クールダウン中は3～10だけから抽選
-          characterNumber =
-            Math.floor(Math.random() * 8) + 3;
+          characterNumber = Math.floor(Math.random() * 8) + 3;
         }
 
-        // 1または2が選ばれた瞬間から共有5秒クールダウン開始。
-        // 1→2、2→1、1→1、2→2のすべてを5秒以内は防ぐ。
-        if (characterNumber === 1 || characterNumber === 2) {
+        // 通常抽選では1・2共通5秒クールダウン。
+        // でたらめイベント中だけこの常識を無視する。
+        if (
+          !ignoreCooldown &&
+          (characterNumber === 1 || characterNumber === 2)
+        ) {
           lastSpecialCharacterSpawnAt = now;
         }
+
+        return characterNumber;
+      }
+
+      function getVisibleMs(overrideMs = null) {
+        if (overrideMs !== null) return overrideMs;
+
+        const levelSpeed = LEVEL_SETTINGS[currentLevel].speed;
+        const appearMinMs = BASE_APPEAR_MIN_MS / levelSpeed;
+        const appearMaxMs = BASE_APPEAR_MAX_MS / levelSpeed;
+
+        return (
+          appearMinMs +
+          Math.random() * (appearMaxMs - appearMinMs)
+        );
+      }
+
+      function createCharacterInHole(
+        holeIndex,
+        {
+          ignoreCooldown = false,
+          taromanOnly = false,
+          visibleMs = null
+        } = {}
+      ) {
+        if (!gameRunning || activeCharacters[holeIndex]) return;
+
+        const characterNumber =
+          pickWeightedCharacter(ignoreCooldown, taromanOnly);
 
         const hole = holes[holeIndex];
         const img = document.createElement("img");
@@ -1158,17 +1343,74 @@
           hitCharacter(holeIndex);
         }, { once: true });
 
-        const levelSpeed = LEVEL_SETTINGS[currentLevel].speed;
-        const appearMinMs = BASE_APPEAR_MIN_MS / levelSpeed;
-        const appearMaxMs = BASE_APPEAR_MAX_MS / levelSpeed;
-
-        const visibleMs =
-          appearMinMs +
-          Math.random() * (appearMaxMs - appearMinMs);
-
         active.disappearTimer = setTimeout(() => {
           removeCharacter(holeIndex, true);
-        }, visibleMs);
+        }, getVisibleMs(visibleMs));
+      }
+
+      /* =========================================================
+         じょうしき：従来どおり1体ずつ出現
+      ========================================================= */
+      function spawnCharacter() {
+        if (!gameRunning) return;
+
+        const emptyHoleIndexes = getEmptyHoleIndexes();
+        if (emptyHoleIndexes.length === 0) return;
+
+        const holeIndex =
+          emptyHoleIndexes[
+            Math.floor(Math.random() * emptyHoleIndexes.length)
+          ];
+
+        createCharacterInHole(holeIndex);
+      }
+
+      /* =========================================================
+         でたらめ：1～9体を一度に出現
+      ========================================================= */
+      function pickDeratameWaveCount() {
+        const roll = Math.random() * 100;
+        let total = 0;
+
+        for (const item of DERATAME_WAVE_COUNTS) {
+          total += item.weight;
+          if (roll < total) return item.count;
+        }
+
+        return 1;
+      }
+
+      function spawnDeratameWave() {
+        if (!gameRunning || currentMode !== "deratame") return;
+        if (chaosEventActive) return;
+        if (performance.now() < spawnPausedUntil) return;
+
+        const emptyHoleIndexes = shuffle(getEmptyHoleIndexes());
+        if (emptyHoleIndexes.length === 0) return;
+
+        const count = Math.min(
+          pickDeratameWaveCount(),
+          emptyHoleIndexes.length
+        );
+
+        for (let i = 0; i < count; i++) {
+          createCharacterInHole(emptyHoleIndexes[i]);
+        }
+      }
+
+      function fillAllHoles({
+        taromanOnly = false,
+        visibleMs = 2000
+      } = {}) {
+        clearAllCharacters(false);
+
+        for (let holeIndex = 0; holeIndex < holes.length; holeIndex++) {
+          createCharacterInHole(holeIndex, {
+            ignoreCooldown: true,
+            taromanOnly,
+            visibleMs
+          });
+        }
       }
 
       /* =========================================================
@@ -1181,35 +1423,91 @@
         if (!active || active.hit) return;
 
         active.hit = true;
-
         clearTimeout(active.disappearTimer);
 
-        score += 1;
+        let points = 1;
+
+        if (
+          currentMode === "deratame" &&
+          (active.number === 1 || active.number === 2)
+        ) {
+          const result = Math.floor(Math.random() * 3);
+
+          if (result === 0) points = 1;
+          if (result === 1) points = 10;
+          if (result === 2) points = -10;
+
+          triggerTaromanScreenEffect(points);
+        }
+
+        score += points;
         hitCounts[active.number] += 1;
 
         scoreText.textContent = String(score);
 
         active.img.classList.add("hit");
-        showFloatingScore(holes[holeIndex]);
+        showFloatingScore(holes[holeIndex], points);
 
         setTimeout(() => {
           removeCharacter(holeIndex, false);
         }, 150);
       }
 
-      function showFloatingScore(hole) {
+      function showFloatingScore(hole, points) {
         const el = document.createElement("div");
         el.className = "floating-score";
-        el.textContent = "+1";
-        hole.appendChild(el);
 
-        setTimeout(() => el.remove(), 600);
+        if (points < 0) {
+          el.classList.add("negative");
+          el.textContent = String(points);
+        } else {
+          el.textContent = `+${points}`;
+        }
+
+        hole.appendChild(el);
+        setTimeout(() => el.remove(), 700);
+      }
+
+      function clearScreenEffect() {
+        if (screenEffectTimer) {
+          clearTimeout(screenEffectTimer);
+          screenEffectTimer = null;
+        }
+
+        screens.game.classList.remove(
+          "taroman-hit",
+          "taroman-mega",
+          "upside-down"
+        );
+      }
+
+      function triggerTaromanScreenEffect(points) {
+        clearScreenEffect();
+
+        let className = "taroman-hit";
+        let duration = 360;
+
+        if (points === 10) {
+          className = "taroman-mega";
+          duration = 580;
+        } else if (points === -10) {
+          className = "upside-down";
+          duration = 1020;
+        }
+
+        void screens.game.offsetWidth;
+        screens.game.classList.add(className);
+
+        screenEffectTimer = setTimeout(() => {
+          screens.game.classList.remove(className);
+          screenEffectTimer = null;
+        }, duration);
       }
 
       /* =========================================================
          キャラが消える
-         missed=true の時、
-         1.png / 2.png だけ叩き逃し判定
+         1.png / 2.png を叩き逃した時だけライフ減少
+         ※でたらめモードでもこのルールは残す
       ========================================================= */
       function removeCharacter(holeIndex, missed) {
         const active = activeCharacters[holeIndex];
@@ -1234,6 +1532,135 @@
       }
 
       /* =========================================================
+         でたらめイベント
+      ========================================================= */
+      function addChaosTimer(callback, delay) {
+        const id = setTimeout(() => {
+          callback();
+        }, delay);
+
+        chaosTimers.push(id);
+        return id;
+      }
+
+      function randomMs(min, max) {
+        return min + Math.random() * (max - min);
+      }
+
+      function showChaosMessage(text, duration = 1100) {
+        if (chaosMessageTimer) {
+          clearTimeout(chaosMessageTimer);
+        }
+
+        chaosMessage.textContent = text;
+        chaosMessage.classList.remove("show");
+        void chaosMessage.offsetWidth;
+        chaosMessage.classList.add("show");
+
+        chaosMessageTimer = setTimeout(() => {
+          chaosMessage.classList.remove("show");
+          chaosMessageTimer = null;
+        }, duration);
+      }
+
+      function scheduleDeratameEvents() {
+        scheduleNextBerabou();
+
+        // 60秒中、たまに1回だけ「5秒間なにも出ない」
+        if (Math.random() < 0.65) {
+          addChaosTimer(() => {
+            triggerSilenceEvent();
+          }, randomMs(17000, 33000));
+        }
+
+        // 60秒中、低確率で1回「全部タローマン」
+        if (Math.random() < 0.48) {
+          addChaosTimer(() => {
+            triggerAllTaromanEvent();
+          }, randomMs(20000, 48000));
+        }
+      }
+
+      function scheduleNextBerabou() {
+        if (!gameRunning || currentMode !== "deratame") return;
+
+        addChaosTimer(() => {
+          if (!gameRunning || currentMode !== "deratame") return;
+
+          if (chaosEventActive) {
+            scheduleNextBerabou();
+            return;
+          }
+
+          triggerBerabouTime();
+          scheduleNextBerabou();
+        }, randomMs(10000, 15000));
+      }
+
+      function triggerBerabouTime() {
+        if (!gameRunning || chaosEventActive) return;
+
+        chaosEventActive = true;
+        showChaosMessage("ベラボー！", 900);
+
+        // ここだけ1・2の5秒ルールを無視して9穴全部出現
+        fillAllHoles({ visibleMs: 2000 });
+
+        addChaosTimer(() => {
+          chaosEventActive = false;
+        }, 2200);
+      }
+
+      function triggerSilenceEvent() {
+        if (!gameRunning || currentMode !== "deratame") return;
+
+        if (chaosEventActive) {
+          addChaosTimer(triggerSilenceEvent, 4000);
+          return;
+        }
+
+        chaosEventActive = true;
+        clearAllCharacters(false);
+
+        spawnPausedUntil = performance.now() + 5000;
+        showChaosMessage("しーん……", 1400);
+
+        addChaosTimer(() => {
+          if (!gameRunning) return;
+
+          showChaosMessage("いきなりぜんぶ！", 1000);
+          fillAllHoles({ visibleMs: 2000 });
+
+          addChaosTimer(() => {
+            chaosEventActive = false;
+            spawnPausedUntil = 0;
+          }, 2200);
+        }, 5000);
+      }
+
+      function triggerAllTaromanEvent() {
+        if (!gameRunning || currentMode !== "deratame") return;
+
+        if (chaosEventActive) {
+          addChaosTimer(triggerAllTaromanEvent, 4500);
+          return;
+        }
+
+        chaosEventActive = true;
+        showChaosMessage("タローマンだらけ！", 1000);
+
+        // 9穴すべて1.pngまたは2.png。
+        fillAllHoles({
+          taromanOnly: true,
+          visibleMs: 2100
+        });
+
+        addChaosTimer(() => {
+          chaosEventActive = false;
+        }, 2300);
+      }
+
+      /* =========================================================
          ライフ / ビル
       ========================================================= */
       function loseLife() {
@@ -1245,14 +1672,11 @@
         lives = Math.max(0, lives - 1);
         updateLives();
 
-        // ライフが1つ減るたびにダメージ音
         safePlay(damageSound, true);
 
         if (lives <= 0) {
-          // 3つ目のライフ消失時は kick.png を挟まず破壊演出へ
-          destroyBuilding();
+          destroyBuilding(false);
         } else {
-          // ビルが破壊されないダメージ時だけ kick.png を2秒表示
           showKickBuilding();
           shakeBuilding();
         }
@@ -1266,10 +1690,7 @@
 
       function shakeBuilding() {
         buildingImage.classList.remove("shake");
-
-        // 同じclassのアニメーションを連続発火させるためreflow
         void buildingImage.offsetWidth;
-
         buildingImage.classList.add("shake");
 
         setTimeout(() => {
@@ -1278,7 +1699,6 @@
       }
 
       function showKickBuilding() {
-        // 連続ダメージ時は2秒タイマーを更新
         if (kickResetTimer) {
           clearTimeout(kickResetTimer);
           kickResetTimer = null;
@@ -1286,27 +1706,23 @@
 
         buildingImage.src = "images/kick.png";
 
-        // kick.png表示と同時にdon.mp3を再生
+        // kick.png表示と同時にdon.mp3
         safePlay(donSound, true);
-
-        // kick.png 表示と同時に don.mp3 を再生
 
         kickResetTimer = setTimeout(() => {
           kickResetTimer = null;
 
-          // ゲーム中かつ破壊演出中でなければ通常ビルへ戻す
           if (gameRunning && !buildingResetTimer && lives > 0) {
             buildingImage.src = "images/bill.png";
           }
         }, KICK_DISPLAY_MS);
       }
 
-      function destroyBuilding() {
+      function destroyBuilding(isAutomaticSecondBreak = false) {
         if (!gameRunning || buildingResetTimer) return;
 
         buildingDestroyCount += 1;
 
-        // kick.png表示中でも即座に破壊演出へ切り替える
         if (kickResetTimer) {
           clearTimeout(kickResetTimer);
           kickResetTimer = null;
@@ -1315,21 +1731,22 @@
         buildingImage.classList.remove("shake");
         buildingImage.src = "images/hakai.png";
 
-        // hakai.png表示と同時に破壊音を再生
         safePlay(hakaiSound, true);
 
-        // 社長を従来のビル位置（下側）にオーバーレイ表示
         syatyoImage.classList.remove("show");
         void syatyoImage.offsetWidth;
         syatyoImage.classList.add("show");
-
-        // syatyo.png表示と同時にsyatyo.mp3を再生
         safePlay(syatyoSound, true);
 
         void buildingImage.offsetWidth;
         buildingImage.classList.add("destroyed");
 
-        // 破壊音と社長音声を同時再生
+        // でたらめモードでは8%の確率で、
+        // 一度復活した0.3秒後になぜかもう一度壊れる。
+        const doubleBreak =
+          currentMode === "deratame" &&
+          !isAutomaticSecondBreak &&
+          Math.random() < 0.08;
 
         buildingResetTimer = setTimeout(() => {
           buildingResetTimer = null;
@@ -1341,9 +1758,19 @@
           buildingImage.classList.remove("destroyed");
           buildingImage.src = "images/bill.png";
 
-          // 何事もなかったかのように復活
           lives = 3;
           updateLives();
+
+          if (doubleBreak) {
+            autoDestroyTimer = setTimeout(() => {
+              autoDestroyTimer = null;
+
+              if (!gameRunning || buildingResetTimer) return;
+
+              showChaosMessage("なぜかもういちど！", 900);
+              destroyBuilding(true);
+            }, 300);
+          }
         }, BUILDING_RESET_MS);
       }
 
@@ -1402,6 +1829,23 @@
           clearTimeout(kickResetTimer);
           kickResetTimer = null;
         }
+
+        if (autoDestroyTimer) {
+          clearTimeout(autoDestroyTimer);
+          autoDestroyTimer = null;
+        }
+
+        if (chaosMessageTimer) {
+          clearTimeout(chaosMessageTimer);
+          chaosMessageTimer = null;
+        }
+
+        chaosTimers.forEach(id => clearTimeout(id));
+        chaosTimers = [];
+
+        chaosEventActive = false;
+        spawnPausedUntil = 0;
+        chaosMessage.classList.remove("show");
       }
 
       function clearAllCharacters(countAsMiss = false) {
@@ -1464,6 +1908,13 @@
         }
 
         destroyCountText.textContent = String(buildingDestroyCount);
+
+        if (currentMode === "deratame") {
+          resultScoreText.textContent = String(score);
+          deratameScoreResult.classList.add("show");
+        } else {
+          deratameScoreResult.classList.remove("show");
+        }
 
         showScreen("result");
       }
