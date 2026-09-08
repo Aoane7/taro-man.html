@@ -15,6 +15,7 @@
     *{box-sizing:border-box}
     html,body{
       width:100%;
+      height:100%;
       min-height:100%;
       margin:0;
       background:#f1e7cc;
@@ -24,11 +25,18 @@
         "Yu Gothic",
         system-ui,
         sans-serif;
+      overflow:hidden;
+      overscroll-behavior:none;
     }
 
     body{
-      min-height:100svh;
-      overflow-x:hidden;
+      width:100vw;
+      height:100dvh;
+      min-height:100dvh;
+      overflow:hidden;
+      position:fixed;
+      inset:0;
+      touch-action:manipulation;
     }
 
     button,img{
@@ -39,11 +47,15 @@
 
     .screen{
       display:none;
-      width:100%;
-      min-height:100svh;
+      position:fixed;
+      inset:0;
+      width:100vw;
+      height:100dvh;
+      min-height:0;
       align-items:center;
       justify-content:center;
-      padding:18px;
+      padding:clamp(6px, 1.5vmin, 18px);
+      overflow:hidden;
     }
 
     .screen.active{
@@ -65,7 +77,7 @@
     #topImage{
       display:block;
       width:min(760px, 94vw);
-      max-height:82svh;
+      max-height:78dvh;
       object-fit:contain;
       margin:auto;
       cursor:pointer;
@@ -125,24 +137,24 @@
       background:rgba(255,255,255,.86);
       border:6px solid #111;
       box-shadow:var(--shadow);
-      padding:clamp(22px, 5vw, 50px);
+      padding:clamp(14px, 3.5vmin, 40px);
       text-align:center;
     }
 
     .title{
-      margin:0 0 28px;
-      font-size:clamp(28px, 6vw, 60px);
+      margin:0 0 clamp(12px, 2.5vmin, 24px);
+      font-size:clamp(26px, 6vmin, 58px);
       line-height:1.05;
       font-weight:1000;
     }
 
     .mode-buttons{
       display:grid;
-      gap:20px;
+      gap:clamp(10px, 2vmin, 18px);
     }
 
     .mode-button{
-      min-height:88px;
+      min-height:clamp(58px, 11dvh, 84px);
       border:5px solid #111;
       background:#fff;
       color:#111;
@@ -190,12 +202,12 @@
       background:rgba(255,255,255,.9);
       border:6px solid #111;
       box-shadow:var(--shadow);
-      padding:clamp(22px, 5vw, 50px);
+      padding:clamp(14px, 3.5vmin, 40px);
       text-align:center;
     }
 
     .level-note{
-      margin:-12px 0 24px;
+      margin:-8px 0 clamp(10px, 2vmin, 18px);
       font-weight:900;
       font-size:clamp(16px, 2.5vw, 22px);
     }
@@ -207,7 +219,7 @@
     }
 
     .level-button{
-      min-height:100px;
+      min-height:clamp(62px, 13dvh, 96px);
       border:5px solid #111;
       background:#fff;
       color:#111;
@@ -234,20 +246,24 @@
 
     /* ---------- GAME ---------- */
     #gameScreen{
-      align-items:flex-start;
+      align-items:stretch;
       background:
         linear-gradient(#a7d9ff 0 58%, #d9c694 58% 100%);
-      padding:10px;
+      padding:clamp(4px, 1vmin, 10px);
     }
 
     .game-shell{
       width:min(1180px, 100%);
+      height:100%;
       margin:0 auto;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
     }
 
     .hud{
       position:relative;
-      min-height:88px;
+      min-height:clamp(58px, 11dvh, 84px);
       display:flex;
       align-items:center;
       justify-content:space-between;
@@ -298,12 +314,15 @@
       grid-template-columns:minmax(0, 1fr) minmax(150px, 30%);
       align-items:end;
       gap:clamp(8px, 2vw, 24px);
-      min-height:calc(100svh - 120px);
+      flex:1 1 auto;
+      min-height:0;
     }
 
     .holes{
-      width:min(72vw, 720px);
+      width:min(72vw, 72dvh, 720px);
+      height:min(72vw, 72dvh, 720px);
       max-width:100%;
+      max-height:100%;
       aspect-ratio:1;
       align-self:center;
       justify-self:center;
@@ -357,21 +376,24 @@
     .building-zone{
       position:relative;
       min-width:0;
-      display:flex;
       height:100%;
-      align-items:flex-end;
+      display:flex;
+      align-items:flex-start;
       justify-content:center;
+      padding-top:3vh;
       padding-bottom:3vh;
     }
 
+    /* syatyo.pngは従来のビル位置（下側）へ移動 */
     #syatyoImage{
       position:absolute;
       left:50%;
-      top:6%;
+      bottom:3vh;
+      top:auto;
       z-index:8;
       display:none;
-      width:min(72%, 220px);
-      max-height:30svh;
+      width:min(100%, 330px);
+      max-height:58dvh;
       object-fit:contain;
       transform:translateX(-50%);
       filter:drop-shadow(0 7px 5px rgba(0,0,0,.28));
@@ -392,7 +414,7 @@
     #buildingImage{
       display:block;
       width:min(100%, 330px);
-      max-height:72svh;
+      max-height:58dvh;
       object-fit:contain;
       transform-origin:50% 100%;
       filter:drop-shadow(0 10px 8px rgba(0,0,0,.22));
@@ -450,28 +472,33 @@
     #resultScreen{
       background:
         radial-gradient(circle at top, #fff1a8, #e9d8aa 62%, #d1b97f);
-      align-items:flex-start;
-      overflow:auto;
+      align-items:center;
+      overflow:hidden;
     }
 
     .result-card{
       width:min(850px, 96vw);
-      margin:18px auto;
-      padding:clamp(18px, 4vw, 36px);
+      margin:0 auto;
+      padding:clamp(10px, 2.2vmin, 24px);
       background:rgba(255,255,255,.9);
       border:6px solid #111;
       box-shadow:var(--shadow);
       text-align:center;
+      max-height:96dvh;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
     }
 
     .result-card h1{
-      margin:0 0 20px;
-      font-size:clamp(32px, 7vw, 62px);
+      margin:0 0 clamp(6px, 1.5vmin, 14px);
+      font-size:clamp(28px, 6vmin, 54px);
     }
 
     .result-sub{
-      margin:8px 0 18px;
-      font-size:clamp(18px, 3vw, 28px);
+      margin:4px 0 clamp(6px, 1.5vmin, 14px);
+      font-size:clamp(16px, 2.6vmin, 24px);
       font-weight:900;
     }
 
@@ -479,12 +506,12 @@
       display:flex;
       flex-wrap:wrap;
       justify-content:center;
-      gap:18px;
-      margin:18px 0 28px;
+      gap:clamp(8px, 1.5vmin, 14px);
+      margin:clamp(6px, 1.5vmin, 14px) 0;
     }
 
     .best-item{
-      min-width:170px;
+      min-width:clamp(120px, 19vmin, 160px);
       background:#fff8d4;
       border:4px solid #111;
       padding:14px;
@@ -492,8 +519,8 @@
     }
 
     .best-item img{
-      width:130px;
-      height:130px;
+      width:clamp(72px, 14vmin, 120px);
+      height:clamp(72px, 14vmin, 120px);
       object-fit:contain;
       display:block;
       margin:0 auto 6px;
@@ -507,8 +534,8 @@
     .destroy-result{
       border-top:4px dashed #111;
       border-bottom:4px dashed #111;
-      padding:18px 6px;
-      margin:18px 0 24px;
+      padding:clamp(6px, 1.5vmin, 14px) 6px;
+      margin:clamp(6px, 1.5vmin, 14px) 0;
       font-size:clamp(22px, 4vw, 36px);
       font-weight:1000;
     }
@@ -560,7 +587,7 @@
       .stage{
         grid-template-columns:minmax(0, 74%) minmax(90px, 26%);
         gap:2px;
-        min-height:calc(100svh - 88px);
+        min-height:0;
       }
 
       .holes{
@@ -570,7 +597,7 @@
       }
 
       #buildingImage{
-        max-height:60svh;
+        max-height:54dvh;
       }
     }
   </style>
@@ -707,10 +734,40 @@
   <audio id="syatyoSound" src="sounds/syatyo.mp3" preload="auto"></audio>
   <audio id="damageSound" src="sounds/damage.mp3" preload="auto"></audio>
   <audio id="kekkaSound" src="sounds/kekka.mp3" preload="auto"></audio>
+  <audio id="donSound" src="sounds/don.mp3" preload="auto"></audio>
 
   <script>
     (() => {
       "use strict";
+
+      /* =========================================================
+         フルスクリーン
+         ※ブラウザ仕様上、ページ読み込み直後の強制フルスクリーンは不可。
+           最初のユーザー操作時に自動でフルスクリーンを要求する。
+      ========================================================= */
+      let fullscreenRequested = false;
+
+      async function requestGameFullscreen() {
+        if (fullscreenRequested) return;
+        fullscreenRequested = true;
+
+        const root = document.documentElement;
+
+        try {
+          if (!document.fullscreenElement && root.requestFullscreen) {
+            await root.requestFullscreen({ navigationUI: "hide" });
+          } else if (!document.webkitFullscreenElement && root.webkitRequestFullscreen) {
+            root.webkitRequestFullscreen();
+          }
+        } catch (_) {
+          // iOS Safari等、Full Screen API非対応環境では通常表示を継続
+        }
+      }
+
+      document.addEventListener("pointerdown", requestGameFullscreen, {
+        once: true,
+        capture: true
+      });
 
       /* =========================================================
          基本設定
@@ -729,10 +786,17 @@
         3: { speed: 1.00, label: "レベル3" }
       };
 
-      // ビル破壊後、hakai.jpg と syatyo.png を3秒表示して元に戻るまで
+      // ビル破壊後、hakai.png と syatyo.png を3秒表示して元に戻るまで
       const BUILDING_RESET_MS = 3000;
 
+      // ビルが破壊されないダメージ時は kick.png を2秒表示
+      const KICK_DISPLAY_MS = 2000;
+
       const CHARACTER_COUNT = 10;
+
+      // 1.png / 2.png は、どちらかが出現してから5秒間は
+      // 1・2の両方を再出現させない
+      const SPECIAL_CHARACTER_COOLDOWN_MS = 5000;
 
       /* =========================================================
          DOM
@@ -772,6 +836,7 @@
       const syatyoSound = document.getElementById("syatyoSound");
       const damageSound = document.getElementById("damageSound");
       const kekkaSound = document.getElementById("kekkaSound");
+      const donSound = document.getElementById("donSound");
 
       /* =========================================================
          ゲーム状態
@@ -788,7 +853,11 @@
       let spawnTimer = null;
       let clockTimer = null;
       let buildingResetTimer = null;
+      let kickResetTimer = null;
       let gameEndAt = 0;
+
+      // 1.png または 2.png が最後に出現した時刻
+      let lastSpecialCharacterSpawnAt = -Infinity;
 
       // 各穴の現在のキャラ
       // { img, number, hit, disappearTimer }
@@ -807,6 +876,20 @@
       /* =========================================================
          音声
       ========================================================= */
+      // 音量設定
+      // トップ・モード選択・レベル選択では通常音量。
+      // モグラ叩き中だけ top.mp3 を10%に固定する。
+      const TOP_BGM_MENU_VOLUME = 1.0;
+      const TOP_BGM_GAME_VOLUME = 0.10;
+
+      // 効果音はすべて100%
+      [nandaSound, damageSound, hakaiSound, syatyoSound, donSound, kekkaSound]
+        .forEach(audio => {
+          audio.volume = 1.0;
+        });
+
+      topBgm.volume = TOP_BGM_MENU_VOLUME;
+
       function safePlay(audio, restart = false) {
         if (restart) {
           try { audio.currentTime = 0; } catch (_) {}
@@ -838,6 +921,14 @@
 
       document.addEventListener("pointerdown", unlockTopAudio, { passive: true });
 
+      // ゲーム中のページスクロールを完全に防ぐ
+      window.addEventListener("wheel", event => event.preventDefault(), { passive: false });
+      window.addEventListener("touchmove", event => event.preventDefault(), { passive: false });
+      window.addEventListener("keydown", event => {
+        const scrollKeys = ["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", "PageUp", "PageDown", "Home", "End", " "];
+        if (scrollKeys.includes(event.key)) event.preventDefault();
+      }, { passive: false });
+
       /* =========================================================
          TOP → nanda.png → モード選択
       ========================================================= */
@@ -847,7 +938,8 @@
         if (topTransitioning) return;
         topTransitioning = true;
 
-        stopAudio(topBgm);
+        // nanda.mp3再生中だけtop.mp3を10%へ下げる
+        topBgm.volume = TOP_BGM_GAME_VOLUME;
 
         screens.top.classList.remove("active");
         nandaOverlay.classList.add("show");
@@ -858,6 +950,10 @@
         setTimeout(() => {
           nandaOverlay.classList.remove("show");
           nandaOverlay.setAttribute("aria-hidden", "true");
+
+          // モード選択へ移る時にtop.mp3を通常音量へ戻す
+          topBgm.volume = TOP_BGM_MENU_VOLUME;
+
           showScreen("mode");
           topTransitioning = false;
         }, 2000);
@@ -892,6 +988,7 @@
         stopAudio(kekkaSound);
 
         showScreen("top");
+        topBgm.volume = TOP_BGM_MENU_VOLUME;
         safePlay(topBgm, true);
       });
 
@@ -902,8 +999,9 @@
         stopAudio(damageSound);
         stopAudio(kekkaSound);
 
-        // ゲーム中もトップBGMをループ再生
-        safePlay(topBgm, true);
+        // モグラ叩き中はBGMを常に10%で再生
+        topBgm.volume = TOP_BGM_GAME_VOLUME;
+        safePlay(topBgm, false);
 
         stopGameTimers();
         clearAllCharacters(false);
@@ -913,12 +1011,19 @@
         lives = 3;
         buildingDestroyCount = 0;
         hitCounts = Array(CHARACTER_COUNT + 1).fill(0);
+        lastSpecialCharacterSpawnAt = -Infinity;
 
         scoreText.textContent = "0";
         timeText.textContent = String(GAME_SECONDS);
         levelText.textContent = String(currentLevel);
 
         syatyoImage.classList.remove("show");
+
+        if (kickResetTimer) {
+          clearTimeout(kickResetTimer);
+          kickResetTimer = null;
+        }
+
         buildingImage.src = "images/bill.png";
         buildingImage.classList.remove("shake", "destroyed");
 
@@ -961,8 +1066,40 @@
             Math.floor(Math.random() * emptyHoleIndexes.length)
           ];
 
-        const characterNumber =
-          Math.floor(Math.random() * CHARACTER_COUNT) + 1;
+        const now = performance.now();
+        const specialAllowed =
+          now - lastSpecialCharacterSpawnAt >= SPECIAL_CHARACTER_COOLDOWN_MS;
+
+        // 通常は1～10から抽選。
+        // ただし1または2が直近5秒以内に出現していた場合は、
+        // 1・2を除外して3～10だけから抽選する。
+        let characterNumber;
+
+        if (specialAllowed) {
+          // 重み付き抽選：
+          // 1.png = 3、2.png = 3、3～10.png = 各1
+          // → 1.png / 2.png は、それぞれ他画像の3倍の出現頻度
+          const weightedCharacters = [
+            1, 1, 1,
+            2, 2, 2,
+            3, 4, 5, 6, 7, 8, 9, 10
+          ];
+
+          characterNumber =
+            weightedCharacters[
+              Math.floor(Math.random() * weightedCharacters.length)
+            ];
+        } else {
+          // 1・2の5秒クールダウン中は3～10だけから抽選
+          characterNumber =
+            Math.floor(Math.random() * 8) + 3;
+        }
+
+        // 1または2が選ばれた瞬間から共有5秒クールダウン開始。
+        // 1→2、2→1、1→1、2→2のすべてを5秒以内は防ぐ。
+        if (characterNumber === 1 || characterNumber === 2) {
+          lastSpecialCharacterSpawnAt = now;
+        }
 
         const hole = holes[holeIndex];
         const img = document.createElement("img");
@@ -1077,10 +1214,13 @@
         // ライフが1つ減るたびにダメージ音
         safePlay(damageSound, true);
 
-        shakeBuilding();
-
         if (lives <= 0) {
+          // 3つ目のライフ消失時は kick.png を挟まず破壊演出へ
           destroyBuilding();
+        } else {
+          // ビルが破壊されないダメージ時だけ kick.png を2秒表示
+          showKickBuilding();
+          shakeBuilding();
         }
       }
 
@@ -1103,25 +1243,59 @@
         }, 550);
       }
 
+      function showKickBuilding() {
+        // 連続ダメージ時は2秒タイマーを更新
+        if (kickResetTimer) {
+          clearTimeout(kickResetTimer);
+          kickResetTimer = null;
+        }
+
+        buildingImage.src = "images/kick.png";
+
+        // kick.png表示と同時にdon.mp3を再生
+        safePlay(donSound, true);
+
+        // kick.png 表示と同時に don.mp3 を再生
+
+        kickResetTimer = setTimeout(() => {
+          kickResetTimer = null;
+
+          // ゲーム中かつ破壊演出中でなければ通常ビルへ戻す
+          if (gameRunning && !buildingResetTimer && lives > 0) {
+            buildingImage.src = "images/bill.png";
+          }
+        }, KICK_DISPLAY_MS);
+      }
+
       function destroyBuilding() {
         if (!gameRunning || buildingResetTimer) return;
 
         buildingDestroyCount += 1;
 
-        buildingImage.classList.remove("shake");
-        buildingImage.src = "images/hakai.jpg";
+        // kick.png表示中でも即座に破壊演出へ切り替える
+        if (kickResetTimer) {
+          clearTimeout(kickResetTimer);
+          kickResetTimer = null;
+        }
 
-        // ビル上部に社長をオーバーレイ表示
+        buildingImage.classList.remove("shake");
+        buildingImage.src = "images/hakai.png";
+
+        // hakai.png表示と同時に破壊音を再生
+        safePlay(hakaiSound, true);
+
+        // 社長を従来のビル位置（下側）にオーバーレイ表示
         syatyoImage.classList.remove("show");
         void syatyoImage.offsetWidth;
         syatyoImage.classList.add("show");
+
+        // syatyo.png表示と同時にsyatyo.mp3を再生
+        safePlay(syatyoSound, true);
 
         void buildingImage.offsetWidth;
         buildingImage.classList.add("destroyed");
 
         // 破壊音と社長音声を同時再生
-        safePlay(hakaiSound, true);
-        safePlay(syatyoSound, true);
 
         buildingResetTimer = setTimeout(() => {
           buildingResetTimer = null;
@@ -1188,6 +1362,11 @@
         if (buildingResetTimer) {
           clearTimeout(buildingResetTimer);
           buildingResetTimer = null;
+        }
+
+        if (kickResetTimer) {
+          clearTimeout(kickResetTimer);
+          kickResetTimer = null;
         }
       }
 
